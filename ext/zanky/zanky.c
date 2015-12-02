@@ -4,16 +4,6 @@
 #include "win32ole.h"
 #include "clrcom/metahost.h"
 
-VALUE m_zanky = Qnil;
-VALUE c_clr_meta_host;
-
-static void clr_meta_host_free();
-static const rb_data_type_t clr_meta_host_datatype = {
-    "clr_meta_host",
-    {NULL, clr_meta_host_free, NULL,},
-    0, 0, RUBY_TYPED_FREE_IMMEDIATELY
-};
-
 static const GUID CLSID_CorRuntimeHost = {0xcb2f6723,0xab3a,0x11d2,{0x9c,0x40,0x00,0xc0,0x4f,0xa3,0x0a,0x3e}};
 static const GUID IID_ICorRuntimeHost = {0xcb2f6722,0xab3a,0x11d2,{0x9c,0x40,0x00,0xc0,0x4f,0xa3,0x0a,0x3e}};
 static const GUID CLSID_CLRMetaHost =  {0x9280188d,0x0e8e,0x4867,{0xb3,0x0c,0x7f,0xa8,0x38,0x84,0xe8,0xde}};
@@ -22,6 +12,19 @@ static const GUID IID_ICLRMetaHost =  {0xD332DB9E, 0xB9B3, 0x4125, {0x82, 0x07, 
 typedef HRESULT (*clr_create_instance_t)(const GUID*, const GUID*, void**);
 
 clr_create_instance_t CLRCreateInstance;
+
+
+VALUE m_zanky = Qnil;
+VALUE c_clr_meta_host = Qnil;
+
+static void clr_meta_host_free(ICLRMetaHost*);
+static const rb_data_type_t clr_meta_host_datatype = {
+    "clr_meta_host",
+    {NULL, clr_meta_host_free, NULL,},
+    0, 0, RUBY_TYPED_FREE_IMMEDIATELY
+};
+
+
 
 static void
 init_mscoree_functions() {
@@ -61,7 +64,8 @@ clr_meta_host_initialize() {
 }
 
 static void
-clr_meta_host_free() {
+clr_meta_host_free(ICLRMetaHost* clr_meta_host) {
+    ICLRMetaHost_Release(clr_meta_host);
 }
 
 static void
