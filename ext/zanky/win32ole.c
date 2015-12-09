@@ -1610,6 +1610,7 @@ ole_variant2val(VARIANT *pvar)
         IDispatch *pDispatch;
         void *p;
         HRESULT hr;
+        fprintf(stderr, "GOT IUNKNOWN\n");
 
         if (V_ISBYREF(pvar))
             punk = *V_UNKNOWNREF(pvar);
