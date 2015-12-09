@@ -27,6 +27,7 @@ def create_zanky_makefile
       spec or 'no'
     end
     $defs << "-DRB_THREAD_SPECIFIC=#{spec}" if spec
+    $CFLAGS.gsub!(/\s?\-g\w*\s/, ' -ggdb3 ')
     create_makefile("zanky")
   end
 end

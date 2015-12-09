@@ -181,6 +181,53 @@ cor_runtime_host_free(ICorRuntimeHost* cor_runtime_host) {
     ICorRuntimeHost_Release(cor_runtime_host);
 }
 
+static
+BSTR to_bstr(char* str) {
+    DWORD len;
+    BSTR  strptr;
+
+    len = MultiByteToWideChar(CP_ACP, 0, str, -1, 0, 0);
+    strptr = SysAllocStringLen(0, len);
+    MultiByteToWideChar(CP_ACP, 0, str, -1, strptr, len);
+
+    return strptr;
+}
+
+static VALUE
+app_domain_create_instance(VALUE self, VALUE assembly_name, VALUE type_name) {
+    IAppDomain* app_domain;
+    IUnknown* inst;
+    BSTR bstr_assembly_name;
+    BSTR bstr_type_name;
+    VARIANT v_inst;
+    VALUE ret_val;
+    HRESULT hresult;
+
+    TypedData_Get_Struct(self, IAppDomain, &app_domain_datatype, app_domain);
+    
+    bstr_assembly_name = to_bstr(StringValueCStr(assembly_name));
+    bstr_type_name = to_bstr(StringValueCStr(type_name));
+
+    VariantInit(&v_inst);
+    
+    hresult = IAppDomain_CreateInstance(app_domain, bstr_assembly_name, bstr_type_name, &inst);
+    if(hresult) {
+        rb_fatal("Could not create instance of %s in %s: Get 0x%x", StringValueCStr(type_name), 
+                StringValueCStr(assembly_name), (unsigned int)hresult);
+    }
+
+    V_VT(&v_inst) = VT_UNKNOWN;
+    V_UNKNOWN(&v_inst) = inst;
+
+    ret_val = ole_variant2val(&v_inst);
+
+    IUnknown_Release(inst);
+    SysFreeString(bstr_assembly_name);
+    SysFreeString(bstr_type_name);
+
+    return ret_val;
+}
+
 static void
 app_domain_free(IAppDomain* app_domain) {
     IAppDomain_Release(app_domain);
@@ -204,6 +251,7 @@ create_cor_runtime_host_class() {
 static void
 create_app_domain_class() {
     c_app_domain = rb_define_class_under(m_zanky, "AppDomain", rb_cData);
+    rb_define_method(c_app_domain, "create_instance", app_domain_create_instance, 2);
 }
 
 void 

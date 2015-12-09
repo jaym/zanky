@@ -150,7 +150,7 @@ static VALUE fole_free(VALUE self);
 static VALUE ole_each_sub(VALUE pEnumV);
 static VALUE ole_ienum_free(VALUE pEnumV);
 static VALUE fole_each(VALUE self);
-static VALUE fole_missing(int argc, VALUE *argv, VALUE self);
+VALUE fole_missing(int argc, VALUE *argv, VALUE self);
 static HRESULT typeinfo_from_ole(struct oledata *pole, ITypeInfo **ppti);
 static VALUE ole_methods(VALUE self, int mask);
 static VALUE fole_methods(VALUE self);
@@ -3275,7 +3275,7 @@ fole_each(VALUE self)
  *
  *  Calls WIN32OLE#invoke method.
  */
-static VALUE
+VALUE
 fole_missing(int argc, VALUE *argv, VALUE self)
 {
     VALUE mid, sym;
@@ -3283,7 +3283,7 @@ fole_missing(int argc, VALUE *argv, VALUE self)
     long n;
     rb_check_arity(argc, 1, UNLIMITED_ARGUMENTS);
     mid = argv[0];
-    sym = rb_to_symbol(&mid);
+    sym = rb_to_symbol(mid);
     if (!NIL_P(sym)) mid = rb_sym2str(sym);
     mname = StringValueCStr(mid);
     if(!mname) {

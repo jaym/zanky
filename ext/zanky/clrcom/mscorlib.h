@@ -90,6 +90,9 @@ struct _Imscorlib_System_AppDomain {
     struct _Imscorlib_System_AppDomainVtbl *lpVtbl;
 };
 
+#define IAppDomain_CreateInstance(This,AssemblyName,TypeName,pRetVal)	\
+    ( (This)->lpVtbl -> CreateInstance(This,AssemblyName,TypeName,pRetVal) ) 
+
 #define IAppDomain_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
