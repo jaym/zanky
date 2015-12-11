@@ -96,4 +96,5 @@ struct _Imscorlib_System_AppDomain {
 #define IAppDomain_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
-
+#define IAppDomain_Load_2(This, AssemblyString, pRetVal) \
+    ( (This)->lpVtbl -> Load_2(This,AssemblyString,pRetVal) ) 

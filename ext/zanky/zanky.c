@@ -212,6 +212,7 @@ app_domain_create_instance(VALUE self, VALUE assembly_name, VALUE type_name) {
     
     hresult = IAppDomain_CreateInstance(app_domain, bstr_assembly_name, bstr_type_name, &inst);
     if(hresult) {
+        // Leaks memory
         rb_fatal("Could not create instance of %s in %s: Get 0x%x", StringValueCStr(type_name), 
                 StringValueCStr(assembly_name), (unsigned int)hresult);
     }
@@ -226,6 +227,28 @@ app_domain_create_instance(VALUE self, VALUE assembly_name, VALUE type_name) {
     SysFreeString(bstr_type_name);
 
     return ret_val;
+}
+
+static VALUE
+app_domain_load(VALUE self, VALUE assembly_string) {
+    IAppDomain* app_domain;
+    IAssembly* assembly;
+    BSTR bstr_assembly_string;
+    HRESULT hresult;
+
+    TypedData_Get_Struct(self, IAppDomain, &app_domain_datatype, app_domain);
+    
+    bstr_assembly_string = to_bstr(StringValueCStr(assembly_string));
+
+    hresult = IAppDomain_Load_2(app_domain, bstr_assembly_string, &assembly);
+    if(hresult) {
+        // Leaks memory
+        rb_fatal("Could not load assembly %s : Got 0x%x", StringValueCStr(assembly_string), 
+                  (unsigned int)hresult);
+    }
+    IUnknown_Release((IUnknown*)assembly);
+
+    return Qnil;
 }
 
 static void
@@ -252,6 +275,7 @@ static void
 create_app_domain_class() {
     c_app_domain = rb_define_class_under(m_zanky, "AppDomain", rb_cData);
     rb_define_method(c_app_domain, "create_instance", app_domain_create_instance, 2);
+    rb_define_method(c_app_domain, "load_assembly", app_domain_load, 1);
 }
 
 void 
