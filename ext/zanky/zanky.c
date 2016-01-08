@@ -194,6 +194,11 @@ BSTR to_bstr(char* str) {
 }
 
 static VALUE
+instance_get_type(VALUE self) {
+    return Qnil;
+}
+
+static VALUE
 app_domain_create_instance(VALUE self, VALUE assembly_name, VALUE type_name) {
     IAppDomain* app_domain;
     IUnknown* inst;
@@ -221,6 +226,8 @@ app_domain_create_instance(VALUE self, VALUE assembly_name, VALUE type_name) {
     V_UNKNOWN(&v_inst) = inst;
 
     ret_val = ole_variant2val(&v_inst);
+
+    rb_define_singleton_method(ret_val, "GetType", instance_get_type, 0);
 
     IUnknown_Release(inst);
     SysFreeString(bstr_assembly_name);
